@@ -14,7 +14,7 @@ Adafruit_7segment clock = Adafruit_7segment();
 Timer t;
 
 //pinConfig
-#define BUTTON_PIN 13
+#define BUTTON_PIN 5
 
 //parameters
 int aegisExpire = 5;
@@ -22,7 +22,7 @@ int spawnIntervalStart = 8;
 int spawnIntervalEnd = 11;
 
 //global variables
-long currentTime = 0;
+long currentTime;
 int secondTimer;
 
 void setup() {
