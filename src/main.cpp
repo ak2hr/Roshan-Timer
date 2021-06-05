@@ -24,6 +24,7 @@ int spawnIntervalEnd = 11;
 //global variables
 long currentTime;
 int secondTimer;
+long lastPress;
 
 void setup() {
   Serial.begin(9600);
@@ -44,14 +45,19 @@ void loop() {
 
 void startTimer() {
   t.stop(secondTimer);
-  currentTime = 1;
+  if(millis() - lastPress < 1000) {
+    currentTime = aegisExpire * 60;
+  } else {
+    currentTime = 1;
+  }
+  lastPress = millis();
   secondTimer = t.every(1000, updateDisplay);
 }
 
 void updateDisplay() {
   int displayTime = ((currentTime / 60) * 100) + (currentTime % 60);
   Serial.println(displayTime);
-  if(displayTime == 1100) {
+  if(currentTime == spawnIntervalEnd * 60) {
     endTimer();
   }
   // clock.print(displayTime, DEC);
