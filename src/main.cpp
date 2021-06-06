@@ -24,11 +24,12 @@ int spawnIntervalEnd = 11;
 //global variables
 long currentTime;
 int secondTimer;
-long lastPress;
+long lastPress = -1000;
+bool secondPress = false;
 
 void setup() {
   Serial.begin(9600);
-  button.attach(BUTTON_PIN, INPUT);
+  button.attach(BUTTON_PIN, INPUT_PULLUP);
   button.interval(10);
 }
 
@@ -46,7 +47,14 @@ void loop() {
 void startTimer() {
   t.stop(secondTimer);
   if(millis() - lastPress < 1000) {
-    currentTime = aegisExpire * 60;
+    if(secondPress) {
+      secondPress = false;
+      endTimer();
+      return;
+    } else {
+      currentTime = aegisExpire * 60;
+      secondPress = true;
+    }
   } else {
     currentTime = 1;
   }
@@ -55,6 +63,7 @@ void startTimer() {
 }
 
 void updateDisplay() {
+  secondPress = false;
   int displayTime = ((currentTime / 60) * 100) + (currentTime % 60);
   Serial.println(displayTime);
   if(currentTime == spawnIntervalEnd * 60) {
