@@ -7,6 +7,9 @@
 void startTimer();
 void updateDisplay();
 void endTimer();
+void startLED();
+void stopLED();
+void changeLEDBrightness();
 
 //objects
 Bounce2::Button button = Bounce2::Button();
@@ -15,6 +18,7 @@ Timer t;
 
 //pinConfig
 #define BUTTON_PIN 5
+#define LED_PIN 6
 
 //parameters
 int aegisExpire = 5;
@@ -24,13 +28,18 @@ int spawnIntervalEnd = 11;
 //global variables
 long currentTime;
 int secondTimer;
+int ledTimer;
 long lastPress = -1000;
 bool secondPress = false;
+int ledBrightness = 0;
+int fadeAmount = 5;
 
 void setup() {
   Serial.begin(9600);
+  pinMode(LED_PIN, OUTPUT);
   button.attach(BUTTON_PIN, INPUT_PULLUP);
   button.interval(10);
+  startLED();
 }
 
 void loop() {
@@ -45,6 +54,7 @@ void loop() {
 }
 
 void startTimer() {
+  stopLED();
   t.stop(secondTimer);
   if(millis() - lastPress < 1000) {
     if(secondPress) {
@@ -80,7 +90,27 @@ void updateDisplay() {
 
 void endTimer() {
   t.stop(secondTimer);
+  startLED();
   // clock.print(0000, HEX);
   // clock.drawColon(true);
   // clock.writeDisplay();
+}
+
+void startLED() {
+  ledBrightness = 0;
+  fadeAmount = 5;
+  ledTimer = t.every(30, changeLEDBrightness);
+}
+
+void stopLED() {
+  t.stop(ledTimer);
+  analogWrite(LED_PIN, 255);
+}
+
+void changeLEDBrightness() {
+  ledBrightness += fadeAmount;
+  if(ledBrightness == 0 || ledBrightness == 255) {
+    fadeAmount = -fadeAmount;
+  }
+  analogWrite(LED_PIN, ledBrightness);
 }
