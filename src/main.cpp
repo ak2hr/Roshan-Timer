@@ -4,12 +4,14 @@
 #include "Timer.h"
 
 //function prototypes
-void startTimer();
+void executeFunction();
+void startTimer(int startingTime);
 void updateDisplay();
 void endTimer();
 void startLED();
-void stopLED();
+void steadyLED();
 void changeLEDBrightness();
+void turnOff();
 
 //objects
 Bounce2::Button button = Bounce2::Button();
@@ -29,10 +31,10 @@ int spawnIntervalEnd = 11;
 long currentTime;
 int secondTimer;
 int ledTimer;
-long lastPress = -1000;
-bool secondPress = false;
+int buttonTimer;
 int ledBrightness = 0;
 int fadeAmount = 5;
+int presses = 0;
 
 void setup() {
   Serial.begin(9600);
@@ -48,32 +50,39 @@ void loop() {
   t.update();
 
   if(button.pressed()) {
-    startTimer();
+    presses += 1;
+    t.stop(buttonTimer);
+    buttonTimer = t.after(500, executeFunction);
   }
   
 }
 
-void startTimer() {
-  stopLED();
-  t.stop(secondTimer);
-  if(millis() - lastPress < 1000) {
-    if(secondPress) {
-      secondPress = false;
+void executeFunction() {
+  switch(presses) {
+    case 1:
+      startTimer(1);
+      break;
+    case 2:
+      startTimer(aegisExpire * 60);
+      break;
+    case 3:
       endTimer();
-      return;
-    } else {
-      currentTime = aegisExpire * 60;
-      secondPress = true;
-    }
-  } else {
-    currentTime = 1;
+      break;
+    default:
+      turnOff();
+      break;
   }
-  lastPress = millis();
+  presses = 0;
+}
+
+void startTimer(int startingTime) {
+  steadyLED();
+  t.stop(secondTimer);
+  currentTime = startingTime;
   secondTimer = t.every(1000, updateDisplay);
 }
 
 void updateDisplay() {
-  secondPress = false;
   int displayTime = ((currentTime / 60) * 100) + (currentTime % 60);
   Serial.println(displayTime);
   if(currentTime == spawnIntervalEnd * 60) {
@@ -102,7 +111,7 @@ void startLED() {
   ledTimer = t.every(30, changeLEDBrightness);
 }
 
-void stopLED() {
+void steadyLED() {
   t.stop(ledTimer);
   analogWrite(LED_PIN, 255);
 }
@@ -113,4 +122,8 @@ void changeLEDBrightness() {
     fadeAmount = -fadeAmount;
   }
   analogWrite(LED_PIN, ledBrightness);
+}
+
+void turnOff() {
+  Serial.println("off");
 }
