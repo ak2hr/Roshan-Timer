@@ -21,6 +21,7 @@ Timer t;
 //pinConfig
 #define BUTTON_PIN 5
 #define LED_PIN 6
+#define DISPLAY_ADDRESS 0x70
 
 //parameters
 int aegisExpire = 5;
@@ -38,6 +39,8 @@ int presses = 0;
 
 void setup() {
   Serial.begin(9600);
+  clock.begin(DISPLAY_ADDRESS);
+  clock.setBrightness(5);
   pinMode(LED_PIN, OUTPUT);
   button.attach(BUTTON_PIN, INPUT_PULLUP);
   button.interval(10);
@@ -87,22 +90,32 @@ void updateDisplay() {
   Serial.println(displayTime);
   if(currentTime == spawnIntervalEnd * 60) {
     endTimer();
+    return;
   }
-  // clock.print(displayTime, DEC);
-  // if(displayTime < 1000) {
-  //   clock.writeDigitNum(1, 0);
-  // }
-  // clock.drawColon(true);
-  // clock.writeDisplay()
+  clock.print(displayTime, DEC);
+  if(displayTime < 10) {
+    clock.writeDigitNum(3, 0);
+  }
+  if(displayTime < 100) {
+    clock.writeDigitNum(1, 0);
+  }
+  if(displayTime < 1000) {
+    clock.writeDigitNum(0, 0);
+  }
+  clock.drawColon(true);
+  clock.writeDisplay();
   currentTime += 1;
 }
 
 void endTimer() {
   t.stop(secondTimer);
   startLED();
-  // clock.print(0000, HEX);
-  // clock.drawColon(true);
-  // clock.writeDisplay();
+  clock.writeDigitNum(0, 0);
+  clock.writeDigitNum(1, 0);
+  clock.writeDigitNum(3, 0);
+  clock.writeDigitNum(4, 0);
+  clock.drawColon(true);
+  clock.writeDisplay();
 }
 
 void startLED() {
@@ -125,5 +138,8 @@ void changeLEDBrightness() {
 }
 
 void turnOff() {
-  Serial.println("off");
+  clock.clear();
+  clock.writeDisplay();
+  t.stop(ledTimer);
+  analogWrite(LED_PIN, 0);
 }
