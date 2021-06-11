@@ -7,16 +7,20 @@
 void executeFunction();
 void startTimer(int startingTime);
 void updateDisplay();
-void endTimer();
+void resetTimer();
 void startLED();
 void steadyLED();
 void changeLEDBrightness();
 void turnOff();
+void blinkClock();
+void endBlink();
+void endTimer();
 
 //objects
 Bounce2::Button button = Bounce2::Button();
 Adafruit_7segment clock = Adafruit_7segment();
 Timer t;
+Timer t2;
 
 //pinConfig
 #define BUTTON_PIN 5
@@ -44,13 +48,13 @@ void setup() {
   pinMode(LED_PIN, OUTPUT);
   button.attach(BUTTON_PIN, INPUT_PULLUP);
   button.interval(10);
-  startLED();
 }
 
 void loop() {
 
   button.update();
   t.update();
+  t2.update();
 
   if(button.pressed()) {
     presses += 1;
@@ -66,10 +70,10 @@ void executeFunction() {
       startTimer(1);
       break;
     case 2:
-      startTimer(aegisExpire * 60);
+      startTimer((aegisExpire * 60) + 1);
       break;
     case 3:
-      endTimer();
+      resetTimer();
       break;
     default:
       turnOff();
@@ -91,6 +95,10 @@ void updateDisplay() {
   if(currentTime == spawnIntervalEnd * 60) {
     endTimer();
     return;
+  } else if(currentTime == spawnIntervalStart * 60) {
+    blinkClock();
+  } else if(currentTime == (aegisExpire * 60) - 30) {
+    blinkClock();
   }
   clock.print(displayTime, DEC);
   if(displayTime < 10) {
@@ -107,10 +115,11 @@ void updateDisplay() {
   currentTime += 1;
 }
 
-void endTimer() {
+void resetTimer() {
   t.stop(secondTimer);
   startLED();
   clock.clear();
+  clock.blinkRate(0);
   clock.writeDisplay();
 }
 
@@ -138,4 +147,22 @@ void turnOff() {
   clock.writeDisplay();
   t.stop(ledTimer);
   analogWrite(LED_PIN, 0);
+}
+
+void blinkClock() {
+  clock.blinkRate(2);
+  t.after(3500, endBlink);
+}
+
+void endBlink() {
+  clock.blinkRate(0);
+}
+
+void endTimer() {
+  t.stop(secondTimer);
+  clock.print(1100, DEC);
+  clock.drawColon(true);
+  clock.blinkRate(2);
+  clock.writeDisplay();
+  t2.after(3900, resetTimer);
 }
