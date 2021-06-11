@@ -40,7 +40,7 @@ int presses = 0;
 void setup() {
   Serial.begin(9600);
   clock.begin(DISPLAY_ADDRESS);
-  clock.setBrightness(5);
+  clock.setBrightness(1);
   pinMode(LED_PIN, OUTPUT);
   button.attach(BUTTON_PIN, INPUT_PULLUP);
   button.interval(10);
