@@ -110,11 +110,7 @@ void updateDisplay() {
 void endTimer() {
   t.stop(secondTimer);
   startLED();
-  clock.writeDigitNum(0, 0);
-  clock.writeDigitNum(1, 0);
-  clock.writeDigitNum(3, 0);
-  clock.writeDigitNum(4, 0);
-  clock.drawColon(true);
+  clock.clear();
   clock.writeDisplay();
 }
 
